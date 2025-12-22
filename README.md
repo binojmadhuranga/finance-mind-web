@@ -23,81 +23,52 @@ This frontend allows users to manage income, expenses, categories, and view mont
 - **Recharts** (or any chart library)
 
 ---
-## 📁 Final Folder Structurer 
+## 📁 Current Folder Structure
 
-src/
+```
+finance-tracker-web/
 ├── app/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   ├── globals.css
-│   │
-│   ├── (auth)/
+│   ├── (auth)/                    # Authentication routes (grouped)
 │   │   ├── login/
-│   │   │   └── page.tsx
-│   │   ├── register/
-│   │   │   └── page.tsx
+│   │   │   └── page.tsx          # Login page
+│   │   └── register/
+│   │       └── page.tsx          # Register page
 │   │
-│   ├── (dashboard)/
+│   ├── (dashboard)/               # Dashboard routes (grouped, protected)
 │   │   ├── dashboard/
-│   │   │   └── page.tsx
-│   │   ├── transactions/
-│   │   │   └── page.tsx
-│   │   ├── categories/
-│   │   │   └── page.tsx
-│   │   ├── reports/
-│   │   │   └── page.tsx
+│   │   │   └── page.tsx          # Main dashboard
+│   │   └── transactions/
+│   │       └── page.tsx          # Transactions page
 │   │
-│   └── api/
-│       └── health/
-│           └── route.ts
-│
-├── store/
-│   ├── index.ts
-│   ├── hooks.ts
-│
-├── features/
-│   ├── auth/
-│   │   ├── authSlice.ts
-│   │   ├── authThunks.ts
-│   │   └── authTypes.ts
-│   │
-│   ├── transactions/
-│   │   ├── transactionSlice.ts
-│   │   ├── transactionThunks.ts
-│   │   └── transactionTypes.ts
-│   │
-│   ├── categories/
-│   │   ├── categorySlice.ts
-│   │   ├── categoryThunks.ts
-│   │   └── categoryTypes.ts
-│   │
-│   └── reports/
-│       ├── reportSlice.ts
-│       └── reportThunks.ts
-│
-├── services/
-│   ├── apiClient.ts
-│   ├── authService.ts
-│   ├── transactionService.ts
-│   ├── categoryService.ts
-│   └── reportService.ts
+│   ├── globals.css               # Global styles
+│   ├── layout.tsx                # Root layout with providers
+│   ├── page.tsx                  # Landing page (home)
+│   └── providers.tsx             # Redux Provider wrapper
 │
 ├── components/
-│   ├── ui/
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   └── Modal.tsx
-│   │
-│   ├── layout/
-│   │   ├── Navbar.tsx
-│   │   ├── Sidebar.tsx
-│   │   └── Footer.tsx
-│   │
-│   └── charts/
-│       ├── ExpenseChart.tsx
-│       └── IncomeChart.tsx
+│   ├── Footer.tsx                # Footer component
+│   └── Navbar.tsx                # Navigation bar component
 │
-├── lib/
+├── services/
+│   ├── apiClient.ts              # Base API client with fetch wrapper
+│   └── authService.ts            # Authentication API service
+│
+├── store/
+│   ├── authSlice.ts              # Auth Redux slice with thunks
+│   ├── authTypes.ts              # TypeScript types for auth
+│   ├── hooks.ts                  # Typed Redux hooks
+│   └── index.ts                  # Redux store configuration
+│
+├── public/
+│   └── icon.png                  # App favicon
+│
+├── middleware.ts                 # Next.js middleware for route protection
+├── next.config.ts                # Next.js configuration
+├── tsconfig.json                 # TypeScript configuration
+├── tailwind.config.ts            # Tailwind CSS configuration
+├── package.json                  # Dependencies and scripts
+└── .env.local                    # Environment variables
+```
 │   ├── auth.ts
 │   ├── constants.ts
 │   └── helpers.ts
