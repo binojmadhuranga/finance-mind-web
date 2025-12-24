@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // Middleware now only checks for cookie presence
-  // AuthProvider handles session validation and redirects
+ 
   const token = request.cookies.get("token")?.value;
   const { pathname } = request.nextUrl;
 
