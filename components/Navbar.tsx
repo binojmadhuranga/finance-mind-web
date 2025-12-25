@@ -39,14 +39,14 @@ export default function Navbar() {
 	);
 
 	return (
-		<nav className="sticky top-0 z-40 w-full border-b border-slate-700 bg-slate-900/80 backdrop-blur">
-			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-				<div className="flex h-16 items-center justify-between">
+		<nav className="sticky top-0 z-40 w-full border-b border-slate-700 bg-slate-900/90 backdrop-blur">
+			<div className="mx-0 max-w-full px-4 sm:px-6 lg:px-8">
+				<div className="flex h-[15vh] items-center justify-between  ">
 					{/* Brand */}
 					<div className="flex items-center gap-2">
 						<Link href="/" className="flex items-center gap-2">
 							<span className="inline-block h-6 w-6 rounded-md bg-blue-500" />
-							<span className="text-white font-semibold">Finance Tracker</span>
+							<span className="text-white font-bold md:text-3xl">Finance Tracker</span>
 						</Link>
 					</div>
 
