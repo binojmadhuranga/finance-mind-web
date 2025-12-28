@@ -14,6 +14,8 @@ type TransactionType = "all" | "income" | "expense";
 export default function TransactionsPage() {
 	const [filter, setFilter] = useState<TransactionType>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [showEditModal, setShowEditModal] = useState(false);
+	const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -87,6 +89,61 @@ export default function TransactionsPage() {
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to delete transaction");
 		}
+	};
+
+	const handleEdit = (transaction: Transaction) => {
+		setEditingTransaction(transaction);
+		setTransactionType(transaction.type);
+		setAmount(transaction.amount);
+		setDate(transaction.date.split('T')[0]); // Extract date part
+		setNote(transaction.note);
+		setCategoryId(transaction.categoryId.toString());
+		setShowEditModal(true);
+	};
+
+	const handleUpdate = async (e: FormEvent) => {
+		e.preventDefault();
+		
+		if (!editingTransaction) return;
+
+		try {
+			setSubmitting(true);
+			setError(null);
+
+			const transactionData: CreateTransactionRequest = {
+				amount: parseFloat(amount),
+				type: transactionType,
+				date,
+				note,
+				categoryId: parseInt(categoryId),
+			};
+
+			await transactionService.updateTransaction(editingTransaction.id, transactionData);
+			
+			// Reset form
+			setAmount("");
+			setNote("");
+			setCategoryId("1");
+			setTransactionType("expense");
+			setShowEditModal(false);
+			setEditingTransaction(null);
+			
+			// Refresh transactions
+			fetchTransactions();
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Failed to update transaction");
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	const resetForm = () => {
+		setAmount("");
+		setNote("");
+		setCategoryId("1");
+		setTransactionType("expense");
+		setDate(new Date().toISOString().split("T")[0]);
+		setError(null);
 	};
 
 	// Calculate stats
@@ -321,8 +378,18 @@ export default function TransactionsPage() {
 											<p className="text-slate-500 text-sm">Category #{transaction.categoryId}</p>
 										</div>
 										<button
+											onClick={() => handleEdit(transaction)}
+											className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition"
+											title="Edit transaction"
+										>
+											<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+											</svg>
+										</button>
+										<button
 											onClick={() => handleDelete(transaction.id)}
 											className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+											title="Delete transaction"
 										>
 											<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -343,7 +410,10 @@ export default function TransactionsPage() {
 						<div className="flex items-center justify-between mb-6">
 							<h3 className="text-2xl font-bold text-white">Add Transaction</h3>
 							<button
-								onClick={() => setShowAddModal(false)}
+								onClick={() => {
+									setShowAddModal(false);
+									resetForm();
+								}}
 								className="p-2 hover:bg-slate-700 rounded-lg transition"
 								type="button"
 							>
@@ -476,6 +546,156 @@ export default function TransactionsPage() {
 								}`}
 							>
 								{submitting ? "Adding..." : "Add Transaction"}
+							</button>
+						</form>
+					</div>
+				</div>
+			)}
+
+			{/* Edit Transaction Modal */}
+			{showEditModal && editingTransaction && (
+				<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+					<div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 max-w-md w-full shadow-2xl">
+						<div className="flex items-center justify-between mb-6">
+							<h3 className="text-2xl font-bold text-white">Edit Transaction</h3>
+							<button
+								onClick={() => {
+									setShowEditModal(false);
+									setEditingTransaction(null);
+									resetForm();
+								}}
+								className="p-2 hover:bg-slate-700 rounded-lg transition"
+								type="button"
+							>
+								<svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								</svg>
+							</button>
+						</div>
+
+						<form onSubmit={handleUpdate} className="space-y-5">
+							{/* Transaction Type Toggle */}
+							<div>
+								<label className="block text-sm font-medium text-slate-300 mb-3">
+									Transaction Type
+								</label>
+								<div className="grid grid-cols-2 gap-3">
+									<button
+										type="button"
+										onClick={() => setTransactionType("expense")}
+										className={`py-3 px-4 rounded-lg font-semibold transition-all transform ${
+											transactionType === "expense"
+												? "bg-red-600 text-white shadow-lg shadow-red-600/50 scale-105"
+												: "bg-slate-700 text-slate-300 hover:bg-slate-600"
+										}`}
+									>
+										<div className="flex items-center justify-center gap-2">
+											<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+											</svg>
+											Expense
+										</div>
+									</button>
+									<button
+										type="button"
+										onClick={() => setTransactionType("income")}
+										className={`py-3 px-4 rounded-lg font-semibold transition-all transform ${
+											transactionType === "income"
+												? "bg-green-600 text-white shadow-lg shadow-green-600/50 scale-105"
+												: "bg-slate-700 text-slate-300 hover:bg-slate-600"
+										}`}
+									>
+										<div className="flex items-center justify-center gap-2">
+											<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+											</svg>
+											Income
+										</div>
+									</button>
+								</div>
+							</div>
+
+							{/* Amount */}
+							<div>
+								<label className="block text-sm font-medium text-slate-300 mb-2">
+									Amount
+								</label>
+								<div className="relative">
+									<span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">$</span>
+									<input
+										type="number"
+										step="0.01"
+										required
+										value={amount}
+										onChange={(e) => setAmount(e.target.value)}
+										className="w-full pl-9 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+										placeholder="0.00"
+									/>
+								</div>
+							</div>
+
+							{/* Date */}
+							<div>
+								<label className="block text-sm font-medium text-slate-300 mb-2">
+									Date
+								</label>
+								<input
+									type="date"
+									required
+									value={date}
+									onChange={(e) => setDate(e.target.value)}
+									className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+								/>
+							</div>
+
+							{/* Category */}
+							<div>
+								<label className="block text-sm font-medium text-slate-300 mb-2">
+									Category ID
+								</label>
+								<input
+									type="number"
+									required
+									value={categoryId}
+									onChange={(e) => setCategoryId(e.target.value)}
+									className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									placeholder="1"
+								/>
+							</div>
+
+							{/* Note */}
+							<div>
+								<label className="block text-sm font-medium text-slate-300 mb-2">
+									Note
+								</label>
+								<textarea
+									required
+									value={note}
+									onChange={(e) => setNote(e.target.value)}
+									rows={3}
+									className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+									placeholder="What was this transaction for?"
+								/>
+							</div>
+
+							{/* Error Display */}
+							{error && (
+								<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+									<p className="text-red-400 text-sm">{error}</p>
+								</div>
+							)}
+
+							{/* Submit Button */}
+							<button
+								type="submit"
+								disabled={submitting}
+								className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${
+									submitting
+										? "bg-slate-600 text-slate-400 cursor-not-allowed"
+										: "bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-105"
+								}`}
+							>
+								{submitting ? "Updating..." : "Update Transaction"}
 							</button>
 						</form>
 					</div>
