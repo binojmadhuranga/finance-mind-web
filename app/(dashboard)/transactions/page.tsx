@@ -8,6 +8,7 @@ import {
 	CreateTransactionRequest,
 	TransactionType as ApiTransactionType 
 } from "@/services/transactionService";
+import { categoryService, Category } from "@/services/categoryService";
 
 type TransactionType = "all" | "income" | "expense";
 
@@ -19,6 +20,8 @@ export default function TransactionsPage() {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [loadingCategories, setLoadingCategories] = useState(false);
 
 	// Form states
 	const [transactionType, setTransactionType] = useState<ApiTransactionType>("expense");
@@ -32,6 +35,23 @@ export default function TransactionsPage() {
 	useEffect(() => {
 		fetchTransactions();
 	}, [filter]);
+
+	// Fetch categories
+	useEffect(() => {
+		fetchCategories();
+	}, []);
+
+	const fetchCategories = async () => {
+		try {
+			setLoadingCategories(true);
+			const data = await categoryService.getCategories();
+			setCategories(data);
+		} catch (err) {
+			console.error("Failed to fetch categories:", err);
+		} finally {
+			setLoadingCategories(false);
+		}
+	};
 
 	const fetchTransactions = async () => {
 		try {
@@ -65,10 +85,14 @@ export default function TransactionsPage() {
 			await transactionService.createTransaction(transactionData);
 			
 			// Reset form
+			setTransactionType("expense");
 			setAmount("");
 			setNote("");
-			setCategoryId("1");
-			setTransactionType("expense");
+			setDate(new Date().toISOString().split("T")[0]);
+			const expenseCategories = categories.filter(cat => cat.type === "expense");
+			if (expenseCategories.length > 0) {
+				setCategoryId(expenseCategories[0].id.toString());
+			}
 			setShowAddModal(false);
 			
 			// Refresh transactions
@@ -121,10 +145,14 @@ export default function TransactionsPage() {
 			await transactionService.updateTransaction(editingTransaction.id, transactionData);
 			
 			// Reset form
+			setTransactionType("expense");
 			setAmount("");
 			setNote("");
-			setCategoryId("1");
-			setTransactionType("expense");
+			setDate(new Date().toISOString().split("T")[0]);
+			const expenseCategories = categories.filter(cat => cat.type === "expense");
+			if (expenseCategories.length > 0) {
+				setCategoryId(expenseCategories[0].id.toString());
+			}
 			setShowEditModal(false);
 			setEditingTransaction(null);
 			
@@ -140,10 +168,35 @@ export default function TransactionsPage() {
 	const resetForm = () => {
 		setAmount("");
 		setNote("");
-		setCategoryId("1");
-		setTransactionType("expense");
 		setDate(new Date().toISOString().split("T")[0]);
 		setError(null);
+		
+		// Set default category based on transaction type
+		const filteredCategories = categories.filter(cat => cat.type === transactionType);
+		if (filteredCategories.length > 0) {
+			setCategoryId(filteredCategories[0].id.toString());
+		} else {
+			setCategoryId("");
+		}
+	};
+
+	// Get filtered categories based on transaction type
+	const getFilteredCategories = () => {
+		return categories.filter(cat => cat.type === transactionType);
+	};
+
+	// Update category when transaction type changes
+	useEffect(() => {
+		const filteredCategories = getFilteredCategories();
+		if (filteredCategories.length > 0 && !filteredCategories.find(cat => cat.id.toString() === categoryId)) {
+			setCategoryId(filteredCategories[0].id.toString());
+		}
+	}, [transactionType, categories]);
+
+	// Get category name by ID
+	const getCategoryName = (categoryId: number) => {
+		const category = categories.find(cat => cat.id === categoryId);
+		return category ? category.name : `Category #${categoryId}`;
 	};
 
 	// Calculate stats
@@ -375,7 +428,7 @@ export default function TransactionsPage() {
 											}`}>
 												{transaction.type === "income" ? "+" : "-"}${parseFloat(transaction.amount).toFixed(2)}
 											</p>
-											<p className="text-slate-500 text-sm">Category #{transaction.categoryId}</p>
+											<p className="text-slate-500 text-sm">{getCategoryName(transaction.categoryId)}</p>
 										</div>
 										<button
 											onClick={() => handleEdit(transaction)}
@@ -501,16 +554,30 @@ export default function TransactionsPage() {
 							{/* Category */}
 							<div>
 								<label className="block text-sm font-medium text-slate-300 mb-2">
-									Category ID
+									Category
 								</label>
-								<input
-									type="number"
-									required
-									value={categoryId}
-									onChange={(e) => setCategoryId(e.target.value)}
-									className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-									placeholder="1"
-								/>
+								{loadingCategories ? (
+									<div className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-slate-400">
+										Loading categories...
+									</div>
+								) : getFilteredCategories().length > 0 ? (
+									<select
+										required
+										value={categoryId}
+										onChange={(e) => setCategoryId(e.target.value)}
+										className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									>
+										{getFilteredCategories().map((category) => (
+											<option key={category.id} value={category.id}>
+												{category.name}
+											</option>
+										))}
+									</select>
+								) : (
+									<div className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-slate-400">
+										No {transactionType} categories available
+									</div>
+								)}
 							</div>
 
 							{/* Note */}
@@ -651,16 +718,30 @@ export default function TransactionsPage() {
 							{/* Category */}
 							<div>
 								<label className="block text-sm font-medium text-slate-300 mb-2">
-									Category ID
+									Category
 								</label>
-								<input
-									type="number"
-									required
-									value={categoryId}
-									onChange={(e) => setCategoryId(e.target.value)}
-									className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-									placeholder="1"
-								/>
+								{loadingCategories ? (
+									<div className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-slate-400">
+										Loading categories...
+									</div>
+								) : getFilteredCategories().length > 0 ? (
+									<select
+										required
+										value={categoryId}
+										onChange={(e) => setCategoryId(e.target.value)}
+										className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									>
+										{getFilteredCategories().map((category) => (
+											<option key={category.id} value={category.id}>
+												{category.name}
+											</option>
+										))}
+									</select>
+								) : (
+									<div className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-slate-400">
+										No {transactionType} categories available
+									</div>
+								)}
 							</div>
 
 							{/* Note */}
