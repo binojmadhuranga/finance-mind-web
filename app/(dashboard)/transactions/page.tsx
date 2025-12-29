@@ -24,6 +24,8 @@ export default function TransactionsPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [loadingCategories, setLoadingCategories] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [isSearching, setIsSearching] = useState(false);
 
 	// Form states
 	const [transactionType, setTransactionType] = useState<ApiTransactionType>("expense");
@@ -37,6 +39,22 @@ export default function TransactionsPage() {
 	useEffect(() => {
 		fetchTransactions();
 	}, [filter]);
+
+	// Search transactions with debouncing
+	useEffect(() => {
+		if (searchQuery.trim() === "") {
+			// If search is empty, fetch normal transactions
+			fetchTransactions();
+			return;
+		}
+
+		// Debounce search
+		const timeoutId = setTimeout(() => {
+			handleSearch(searchQuery);
+		}, 500); // 500ms debounce
+
+		return () => clearTimeout(timeoutId);
+	}, [searchQuery]);
 
 	// Fetch categories
 	useEffect(() => {
@@ -59,6 +77,7 @@ export default function TransactionsPage() {
 		try {
 			setLoading(true);
 			setError(null);
+			setIsSearching(false);
 			const params = filter !== "all" ? { type: filter as ApiTransactionType } : undefined;
 			const data = await transactionService.getTransactions(params);
 			setTransactions(data);
@@ -66,6 +85,33 @@ export default function TransactionsPage() {
 			setError(err instanceof Error ? err.message : "Failed to fetch transactions");
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const handleSearch = async (query: string) => {
+		if (!query.trim()) {
+			fetchTransactions();
+			return;
+		}
+
+		try {
+			setLoading(true);
+			setError(null);
+			setIsSearching(true);
+			const data = await transactionService.searchTransactions(query);
+			setTransactions(data);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Failed to search transactions");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleSearchChange = (query: string) => {
+		setSearchQuery(query);
+		// If search is cleared, reset filter to "all"
+		if (query.trim() === "" && isSearching) {
+			setFilter("all");
 		}
 	};
 
@@ -243,7 +289,10 @@ export default function TransactionsPage() {
 			{/* Filter Tabs */}
 			<div className="flex flex-wrap gap-3">
 				<button
-					onClick={() => setFilter("all")}
+					onClick={() => {
+						setFilter("all");
+						setSearchQuery("");
+					}}
 					className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
 						filter === "all"
 							? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
@@ -253,7 +302,10 @@ export default function TransactionsPage() {
 					All Transactions
 				</button>
 				<button
-					onClick={() => setFilter("income")}
+					onClick={() => {
+						setFilter("income");
+						setSearchQuery("");
+					}}
 					className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
 						filter === "income"
 							? "bg-green-600 text-white shadow-lg shadow-green-600/50"
@@ -263,7 +315,10 @@ export default function TransactionsPage() {
 					Income
 				</button>
 				<button
-					onClick={() => setFilter("expense")}
+					onClick={() => {
+						setFilter("expense");
+						setSearchQuery("");
+					}}
 					className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
 						filter === "expense"
 							? "bg-red-600 text-white shadow-lg shadow-red-600/50"
@@ -325,6 +380,8 @@ export default function TransactionsPage() {
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				onAddTransaction={() => setShowAddModal(true)}
+				searchQuery={searchQuery}
+				onSearchChange={handleSearchChange}
 			/>
 
 			{/* Add Transaction Modal */}
