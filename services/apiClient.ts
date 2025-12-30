@@ -11,23 +11,45 @@ export const apiClient = {
     const config: RequestInit = {
       ...options,
       credentials: "include",
-      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
       },
     };
 
-    const response = await fetch(url, config);
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        message: "An error occurred",
-      }));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    // Log request details in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request:', {
+        url,
+        method: config.method,
+        body: options?.body
+      });
     }
 
-    return response.json();
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          message: "An error occurred",
+        }));
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          error
+        });
+        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      // Check if it's a network/CORS error
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        console.error('Network/CORS Error: Unable to reach API. Check CORS configuration.');
+        throw new Error('Unable to connect to server. Please check your network connection.');
+      }
+      throw error;
+    }
   },
 
   get<T>(endpoint: string, options?: RequestInit): Promise<T> {
