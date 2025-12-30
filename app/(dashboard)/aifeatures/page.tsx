@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Card from "@/components/Card";
 import { aiService } from "@/services/aiService";
+import ReactMarkdown from "react-markdown";
 
 export default function AIFeaturesPage() {
   const [period, setPeriod] = useState("");
@@ -48,40 +49,6 @@ export default function AIFeaturesPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatSuggestions = (text: string) => {
-    // Split by lines and format as needed
-    return text.split('\n').map((line, index) => {
-      // Handle headers
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const headerText = line.replace(/\*\*/g, '');
-        return (
-          <h3 key={index} className="text-lg font-bold text-blue-400 mt-4 mb-2">
-            {headerText}
-          </h3>
-        );
-      }
-      // Handle bullet points
-      if (line.trim().startsWith('*')) {
-        const bulletText = line.trim().substring(1).trim();
-        return (
-          <li key={index} className="ml-6 mb-2 text-blue-100">
-            {bulletText}
-          </li>
-        );
-      }
-      // Regular paragraph
-      if (line.trim()) {
-        return (
-          <p key={index} className="mb-2 text-blue-100">
-            {line}
-          </p>
-        );
-      }
-      // Empty line
-      return <div key={index} className="h-2" />;
-    });
   };
 
   return (
@@ -213,12 +180,12 @@ export default function AIFeaturesPage() {
             )}
 
             {suggestions && (
-              <div className="mt-6 p-6 bg-blue-900 border border-blue-700 rounded-lg">
+              <div className="mt-6 p-6 bg-slate-800 border border-slate-700 rounded-lg">
                 <h3 className="text-xl font-semibold text-white mb-4">
                   AI Analysis for {period}
                 </h3>
-                <div className="prose prose-invert max-w-none">
-                  {formatSuggestions(suggestions)}
+                <div className="prose prose-invert prose-headings:text-blue-400 prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-white max-w-none">
+                  <ReactMarkdown>{suggestions}</ReactMarkdown>
                 </div>
               </div>
             )}
