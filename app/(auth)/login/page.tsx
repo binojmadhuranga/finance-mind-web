@@ -16,6 +16,12 @@ export default function LoginPage() {
     password: "",
   });
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,7 +29,6 @@ export default function LoginPage() {
 
     try {
       const result = await dispatch(loginUser(formData)).unwrap();
-      router.replace("/dashboard");
     } catch (err) {
       console.error("Login failed:", err);
     }
