@@ -39,22 +39,23 @@ export default function Navbar() {
 	);
 
 	return (
-		<nav className="sticky top-0 z-[100] w-full border-b border-slate-700 bg-slate-900/95 backdrop-blur-md shadow-lg">
-			<div className="relative z-10 mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-				<div className="flex h-16 sm:h-20 lg:h-24 items-center justify-between">
-					{/* Brand */}
-					<div className="relative z-10 flex items-center flex-shrink-0">
-						<Link href="/" className="flex items-center" onClick={() => setOpen(false)}>
-							<img
-								src="/navImage.png"
-								alt="Finance Tracker"
+		<>
+			<nav className="sticky top-0 z-40 w-full border-b border-slate-700 bg-slate-900/95 backdrop-blur-md shadow-lg">
+				<div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+					<div className="flex h-16 sm:h-20 lg:h-24 items-center justify-between">
+						{/* Brand */}
+						<div className="flex items-center flex-shrink-0">
+							<Link href="/" className="flex items-center" onClick={() => setOpen(false)}>
+								<img
+									src="/navImage.png"
+									alt="Finance Tracker"
 								className="h-12 sm:h-16 md:h-20 lg:h-24 w-auto"
 							/>
 						</Link>
 					</div>
 
 					{/* Desktop nav */}
-					<div className="relative z-10 hidden md:flex items-center gap-2">
+						<div className="hidden md:flex items-center gap-2">
 						{isAuthenticated && (
 							<>
 								{navLink("/dashboard", "Dashboard")}
@@ -66,7 +67,7 @@ export default function Navbar() {
 					</div>
 
 					{/* Right side */}
-					<div className="relative z-10 hidden md:flex items-center gap-3">
+						<div className="hidden md:flex items-center gap-3">
 						{isAuthenticated ? (
 							<>
 								<span className="text-slate-300">{user?.name}</span>
@@ -94,7 +95,7 @@ export default function Navbar() {
 					<button
 						aria-label="Toggle Menu"
 						aria-expanded={open}
-						className="relative z-10 md:hidden inline-flex items-center justify-center rounded-lg p-2.5 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+						className="md:hidden inline-flex items-center justify-center rounded-lg p-2.5 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
 						onClick={() => setOpen((v) => !v)}
 					>
 						<svg
@@ -123,24 +124,25 @@ export default function Navbar() {
 					</button>
 				</div>
 			</div>
+		</nav>
 
-			{/* Mobile drawer backdrop */}
-			<div 
-				className={`fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300 ${
-					open ? 'opacity-100 z-[9998]' : 'opacity-0 pointer-events-none -z-10'
-				}`}
-				onClick={() => setOpen(false)}
-				aria-hidden="true"
-			/>
+		{/* Mobile drawer backdrop */}
+		<div 
+			className={`fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300 ${
+				open ? 'opacity-100 z-50' : 'opacity-0 pointer-events-none -z-10'
+			}`}
+			onClick={() => setOpen(false)}
+			aria-hidden="true"
+		/>
 
-			{/* Mobile drawer menu */}
-			<div 
-				className={`md:hidden fixed top-0 left-0 bottom-0 z-[9999] w-72 bg-slate-900 border-r border-slate-700 shadow-2xl transform transition-transform duration-300 ease-in-out ${
-					open ? 'translate-x-0' : '-translate-x-full'
-				}`}
-			>
-				{/* Drawer header */}
-				<div className="relative z-10 flex items-center justify-between px-4 py-4 border-b border-slate-700 bg-slate-900">
+		{/* Mobile drawer menu */}
+		<div 
+			className={`md:hidden fixed top-0 left-0 bottom-0 z-[60] w-72 bg-slate-900 border-r border-slate-700 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+				open ? 'translate-x-0' : '-translate-x-full'
+			}`}
+		>
+			{/* Drawer header */}
+			<div className="relative z-10 flex items-center justify-between px-4 py-4 border-b border-slate-700 bg-slate-900">
 					<div className="flex items-center gap-2">
 						<img
 							src="/navImage.png"
@@ -245,7 +247,7 @@ export default function Navbar() {
 					</div>
 				</div>
 			</div>
-		</nav>
+		</>
 	);
 }
 
