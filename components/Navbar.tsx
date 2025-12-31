@@ -39,16 +39,16 @@ export default function Navbar() {
 	);
 
 	return (
-		<nav className="sticky top-0 z-40 w-full border-b border-slate-700 bg-slate-900/90 backdrop-blur">
-			<div className="mx-0 max-w-full px-4 sm:px-6 lg:px-8">
-				<div className="flex h-[15vh] items-center justify-between  ">
+		<nav className="sticky top-0 z-50 w-full border-b border-slate-700 bg-slate-900/95 backdrop-blur-md shadow-lg">
+			<div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+				<div className="flex h-16 sm:h-20 lg:h-24 items-center justify-between">
 					{/* Brand */}
-					<div className="flex items-center gap-2">
-						<Link href="/" className="flex items-center gap-2">
+					<div className="flex items-center flex-shrink-0">
+						<Link href="/" className="flex items-center">
 							<img
 								src="/navImage.png"
 								alt="Finance Tracker"
-								className="h-20 md:h-27 lg:h-35 w-auto"
+								className="h-12 sm:h-16 md:h-20 lg:h-24 w-auto"
 							/>
 						</Link>
 					</div>
@@ -89,11 +89,12 @@ export default function Navbar() {
 					{/* Mobile toggle */}
 					<button
 						aria-label="Toggle Menu"
-						className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-slate-300 hover:bg-slate-700 hover:text-white"
+						aria-expanded={open}
+						className="md:hidden inline-flex items-center justify-center rounded-lg p-2.5 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
 						onClick={() => setOpen((v) => !v)}
 					>
 						<svg
-							className="h-6 w-6"
+							className="h-7 w-7"
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
 							viewBox="0 0 24 24"
@@ -119,10 +120,31 @@ export default function Navbar() {
 				</div>
 			</div>
 
-			{/* Mobile menu */}
+			{/* Mobile menu backdrop */}
 			{open && (
-				<div className="md:hidden border-t border-slate-700 bg-slate-900">
-					<div className="space-y-1 px-2 pt-2 pb-3">
+				<div 
+					className="fixed inset-0 z-40 bg-black/50 md:hidden"
+					onClick={() => setOpen(false)}
+					aria-hidden="true"
+				/>
+			)}
+
+			{/* Mobile menu */}
+			<div 
+				className={`md:hidden fixed top-16 sm:top-20 left-0 right-0 z-40 border-t border-slate-700 bg-slate-900 shadow-xl transition-all duration-300 ease-in-out ${
+					open 
+						? 'opacity-100 translate-y-0 max-h-[calc(100vh-4rem)]' 
+						: 'opacity-0 -translate-y-2 max-h-0 pointer-events-none'
+				}`}
+			>
+				<div className="overflow-y-auto overscroll-contain max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-5rem)]">
+					<div className="space-y-1 px-3 py-4">
+						{isAuthenticated && user && (
+							<div className="px-3 py-3 mb-2 rounded-lg bg-slate-800 border border-slate-700">
+								<p className="text-xs text-slate-400 mb-1">Signed in as</p>
+								<p className="text-sm font-medium text-white truncate">{user.name}</p>
+							</div>
+						)}
 						{navLink("/dashboard", "Dashboard")}
 						{navLink("/transactions", "Transactions")}
 						{navLink("/categories", "Categories")}
@@ -130,19 +152,25 @@ export default function Navbar() {
 						{isAuthenticated ? (
 							<button
 								onClick={handleLogout}
-								className="mt-1 w-full text-left px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition"
+								className="mt-2 w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 active:bg-red-800 transition-colors"
 							>
 								Logout
 							</button>
 						) : (
-							<>
+							<div className="space-y-1 pt-2">
 								{navLink("/login", "Login")}
-								{navLink("/register", "Sign up")}
-							</>
+								<Link
+									href="/register"
+									onClick={() => setOpen(false)}
+									className="block w-full text-center px-3 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-colors"
+								>
+									Sign up
+								</Link>
+							</div>
 						)}
 					</div>
 				</div>
-			)}
+			</div>
 		</nav>
 	);
 }
