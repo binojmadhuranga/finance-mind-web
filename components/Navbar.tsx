@@ -27,7 +27,7 @@ export default function Navbar() {
 	) => (
 		<Link
 			href={href}
-			className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+			className={`block w-full px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 				pathname === href
 					? "text-white bg-slate-700"
 					: "text-slate-300 hover:text-white hover:bg-slate-700/60"
