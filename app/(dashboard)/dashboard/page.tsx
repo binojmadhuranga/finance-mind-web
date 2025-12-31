@@ -85,10 +85,10 @@ export default function DashboardPage() {
           </p>
           <Link
             href="/transactions"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-blue-700 font-semibold rounded-lg shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-all transform hover:scale-105 active:scale-100 text-sm sm:text-base w-full sm:w-auto max-w-xs sm:max-w-none"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow-lg hover:bg-blue-50 transition-all transform hover:scale-105 w-fit"
           >
             View Transactions
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </Link>
