@@ -30,6 +30,8 @@ export default function LoginPage() {
     try {
       const result = await dispatch(loginUser(formData)).unwrap();
       console.log("Login successful!", result);
+      // Store auth state in localStorage for middleware to check
+      localStorage.setItem("isAuthenticated", "true");
       // Force redirect after successful login
       router.push("/dashboard");
     } catch (err) {

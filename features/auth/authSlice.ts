@@ -146,12 +146,20 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem("isAuthenticated");
+        }
       })
       .addCase(logoutUser.rejected, (state) => {
         // Even if logout fails, clear the local state
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem("isAuthenticated");
+        }
       });
 
   },

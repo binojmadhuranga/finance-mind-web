@@ -1,3 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/store/hooks";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -6,6 +11,17 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    // Check authentication
+    const authStored = localStorage.getItem("isAuthenticated");
+    if (!isAuthenticated && !authStored) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, router]);
+
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
       <Navbar />
