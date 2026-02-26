@@ -29,6 +29,9 @@ export default function LoginPage() {
 
     try {
       const result = await dispatch(loginUser(formData)).unwrap();
+      console.log("Login successful!", result);
+      // Force redirect after successful login
+      router.push("/dashboard");
     } catch (err) {
       console.error("Login failed:", err);
     }
