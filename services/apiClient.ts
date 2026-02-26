@@ -1,4 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!; // ❗ no fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.binoj.me/api";
+
+// Log for debugging
+console.log('🔧 API_BASE_URL:', API_BASE_URL);
 
 function buildUrl(endpoint: string) {
   const safeEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
