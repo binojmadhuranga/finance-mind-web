@@ -1,63 +1,65 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!; // ❗ no fallback
 
+function buildUrl(endpoint: string) {
+  const safeEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  return `${API_BASE_URL}${safeEndpoint}`;
+}
 
 export const apiClient = {
-  async request<T>(
-    endpoint: string,
-    options?: RequestInit
-  ): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
+  async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const url = buildUrl(endpoint);
 
     const config: RequestInit = {
       ...options,
-      credentials: "include",
+      credentials: "include", // REQUIRED for cookies
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
       },
     };
 
-    // Log request details in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API Request:', {
+    if (process.env.NODE_ENV === "development") {
+      console.log("API Request:", {
         url,
         method: config.method,
-        body: options?.body
+        body: options?.body,
       });
     }
 
+    let response: Response;
+
     try {
-      const response = await fetch(url, config);
-
-      // Handle auth session check gracefully
-      if (response.status === 401) {
-        // For /auth/me, 401 means "not logged in", NOT an error
-        throw new Error("UNAUTHORIZED");
-      }
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({
-          message: "An error occurred",
-        }));
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
-      }
-
-      return response.json();
-    } catch (error) {
-      // Check if it's a network/CORS error
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        console.error('Network/CORS Error: Unable to reach API. Check CORS configuration.');
-        throw new Error('Unable to connect to server. Please check your network connection.');
-      }
-      throw error;
+      response = await fetch(url, config);
+    } catch {
+      throw new Error("Unable to connect to server.");
     }
+
+    // 401 is NORMAL for /auth/me
+    if (response.status === 401) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    if (!response.ok) {
+      let message = `HTTP ${response.status}`;
+      try {
+        const err = await response.json();
+        message = err?.message || message;
+      } catch {}
+      throw new Error(message);
+    }
+
+    if (response.status === 204) {
+      return null as T;
+    }
+
+    return response.json();
   },
 
-  get<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  get<T>(endpoint: string, options?: RequestInit) {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   },
 
-  post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+  post<T>(endpoint: string, data?: unknown, options?: RequestInit) {
     return this.request<T>(endpoint, {
       ...options,
       method: "POST",
@@ -65,7 +67,7 @@ export const apiClient = {
     });
   },
 
-  put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+  put<T>(endpoint: string, data?: unknown, options?: RequestInit) {
     return this.request<T>(endpoint, {
       ...options,
       method: "PUT",
@@ -73,7 +75,7 @@ export const apiClient = {
     });
   },
 
-  delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  delete<T>(endpoint: string, options?: RequestInit) {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   },
 };
